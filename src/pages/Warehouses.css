@@ -1,0 +1,72 @@
+.warehouse-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1024px) {
+  .warehouse-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .warehouse-grid { grid-template-columns: 1fr; }
+}
+
+.warehouse-card {
+  animation: kpiFadeIn 400ms ease-out both;
+}
+
+.warehouse-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.warehouse-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.warehouse-location {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.warehouse-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.wh-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.wh-stat-label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.wh-stat-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.capacity-bar-wrap {
+  height: 8px;
+  background: var(--input-bg);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.capacity-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--success), var(--teal));
+  border-radius: 4px;
+  transition: width 600ms ease-out;
+}

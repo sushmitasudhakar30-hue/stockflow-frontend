@@ -1,0 +1,30 @@
+.expanded-stock-grid {
+  padding: 4px 0;
+}
+
+.warehouse-stock-list {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.warehouse-stock-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  min-width: 140px;
+}
+
+.ws-name {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.ws-qty {
+  font-size: 1rem;
+  font-weight: 700;
+}

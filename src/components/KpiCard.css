@@ -1,0 +1,58 @@
+.kpi-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform var(--transition), box-shadow var(--transition);
+  animation: kpiFadeIn 400ms ease-out both;
+}
+
+@keyframes kpiFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.kpi-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.kpi-primary .kpi-icon { background: var(--primary-light); color: var(--primary); }
+.kpi-teal    .kpi-icon { background: rgba(127,209,217,0.2); color: #2a8a93; }
+.kpi-amber   .kpi-icon { background: rgba(242,183,5,0.15); color: #b88800; }
+.kpi-success .kpi-icon { background: rgba(31,157,107,0.15); color: var(--success); }
+.kpi-danger  .kpi-icon { background: rgba(214,69,69,0.15); color: var(--danger); }
+
+[data-theme="dark"] .kpi-amber .kpi-icon { color: var(--amber); }
+[data-theme="dark"] .kpi-teal .kpi-icon { color: var(--teal); }
+
+.kpi-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2px;
+}

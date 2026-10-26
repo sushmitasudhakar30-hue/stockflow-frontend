@@ -1,0 +1,58 @@
+.orders-ship-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.order-ship-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  transition: all var(--transition);
+}
+
+.order-ship-item:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.order-ship-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.order-ship-num {
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.order-ship-customer {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.order-overdue {
+  font-size: 0.65rem;
+  color: var(--danger);
+  background: rgba(214,69,69,0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.order-ship-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.order-ship-amount {
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}

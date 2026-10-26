@@ -1,0 +1,9 @@
+.chart-wrapper {
+  position: relative;
+  height: 260px;
+  width: 100%;
+}
+
+.chart-doughnut {
+  height: 220px;
+}

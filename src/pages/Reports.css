@@ -1,0 +1,10 @@
+.reports-filters {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.reports-filters .form-group {
+  flex: 1;
+  min-width: 160px;
+}
