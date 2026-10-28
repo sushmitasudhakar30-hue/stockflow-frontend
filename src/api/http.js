@@ -1,4 +1,7 @@
-// Small fetch wrapper for the StockFlow REST API: adds the login token, parses JSON, and raises readable errors.
+import axios from 'axios';
+
+// API client for the StockFlow REST API, built on axios.
+// Other files only use `http.get/post/put/patch/delete`, so they do not need to change.
 const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
 const TOKEN_KEY = 'stockflow_token';
 
@@ -24,39 +27,43 @@ export const tokenStore = {
   },
 };
 
-async function request(method, path, body, { auth = true } = {}) {
-  const headers = { 'Content-Type': 'application/json' };
+const client = axios.create({
+  baseURL: BASE_URL,
+  timeout: 15000, // fail instead of hanging forever if the server is unreachable
+  headers: { 'Content-Type': 'application/json' },
+});
+
+// Request: attach the login token (skipped for the login call itself)
+client.interceptors.request.use((config) => {
   const token = tokenStore.get();
-  if (auth && token) headers.Authorization = `Bearer ${token}`;
+  if (token && !config.skipAuth) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
-  let res;
-  try {
-    res = await fetch(`${BASE_URL}${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
-  } catch {
-    throw new ApiError('Cannot reach the server. Check your connection and that the API is running.', 0);
-  }
-
-  const text = await res.text();
-  let data = null;
-  if (text) {
-    try { data = JSON.parse(text); } catch { data = null; }
-  }
-
-  if (!res.ok) {
-    // An expired/invalid token on a normal request means the session is over; the login endpoint is excluded.
-    if (res.status === 401 && auth && token) {
-      tokenStore.clear();
-      window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+// Response: return just the data, and turn every failure into one readable ApiError
+client.interceptors.response.use(
+  (response) => (response.data === '' ? null : response.data),
+  (error) => {
+    if (error.response) {
+      const { status, data } = error.response;
+      // An expired/invalid token on a normal request means the session is over
+      if (status === 401 && !error.config?.skipAuth && tokenStore.get()) {
+        tokenStore.clear();
+        window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+      }
+      return Promise.reject(new ApiError(data?.message || `Request failed (${status})`, status));
     }
-    throw new ApiError(data?.message || `Request failed (${res.status})`, res.status);
+    if (error.code === 'ECONNABORTED') {
+      return Promise.reject(new ApiError('The server took too long to respond. Please try again.', 0));
+    }
+    return Promise.reject(new ApiError('Cannot reach the server. Check your connection and that the API is running.', 0));
   }
-  return data;
-}
+);
 
 export const http = {
-  get: (path) => request('GET', path),
-  post: (path, body, options) => request('POST', path, body ?? {}, options),
-  put: (path, body) => request('PUT', path, body ?? {}),
-  patch: (path, body) => request('PATCH', path, body ?? {}),
-  delete: (path) => request('DELETE', path),
+  get: (path) => client.get(path),
+  post: (path, body, options = {}) => client.post(path, body ?? {}, { skipAuth: options.auth === false }),
+  put: (path, body) => client.put(path, body ?? {}),
+  patch: (path, body) => client.patch(path, body ?? {}),
+  delete: (path) => client.delete(path),
 };
