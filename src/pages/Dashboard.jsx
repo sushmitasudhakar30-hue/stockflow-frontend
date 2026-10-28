@@ -81,7 +81,7 @@ export default function Dashboard() {
         </div>
         <div ref={chartRef2} className={`card reveal ${rev2 ? 'revealed' : ''}`} style={{ transitionDelay: '100ms' }}>
           <div className="card-title">Stock Value Trend</div>
-          <StockValueTrendChart />
+          <StockValueTrendChart products={products} movements={movements} />
         </div>
       </div>
 

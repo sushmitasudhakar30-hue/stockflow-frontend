@@ -97,13 +97,14 @@ export function StockInOutChart({ movements }) {
 }
 
 /* ---- Stock Value Trend (area) ---- */
-export function StockValueTrendChart() {
+export function StockValueTrendChart({ products = [], movements = [] }) {
+  const trend = getStockValueTrend(products, movements);
   const data = {
-    labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+    labels: trend.labels,
     datasets: [
       {
         label: 'Stock Value (₹)',
-        data: [480000, 520000, 495000, 560000, 540000, 610000],
+        data: trend.values,
         borderColor: '#6b4fbb',
         backgroundColor: 'rgba(107,79,187,0.15)',
         fill: true,
@@ -255,19 +256,55 @@ function getLast7Days(movements) {
   return { labels, stockIn, stockOut };
 }
 
+// Last `count` calendar months ending with the current one, oldest first: [{ key: 'YYYY-MM', label: 'Oct', end: Date }]
+function lastMonths(count) {
+  const now = new Date();
+  const out = [];
+  for (let i = count - 1; i >= 0; i--) {
+    const first = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const end = i === 0 ? now : new Date(first.getFullYear(), first.getMonth() + 1, 0, 23, 59, 59, 999);
+    const key = `${first.getFullYear()}-${String(first.getMonth() + 1).padStart(2, '0')}`;
+    out.push({ key, label: first.toLocaleDateString('en-IN', { month: 'short' }), end });
+  }
+  return out;
+}
+
+// Stock value at the end of each of the last 6 months, rebuilt from the server data: start from today's stock and
+// undo every movement that happened after that month-end (valued at current prices; transfers don't change the total).
+function getStockValueTrend(products, movements) {
+  const months = lastMonths(6);
+  const priceById = Object.fromEntries(products.map((p) => [p.id, p.price]));
+  const currentValue = products.reduce(
+    (sum, p) => sum + Object.values(p.warehouseStock || {}).reduce((a, b) => a + b, 0) * p.price,
+    0
+  );
+  const values = months.map(({ end }) => {
+    let value = currentValue;
+    for (const m of movements) {
+      const price = priceById[m.productId];
+      if (price === undefined || new Date(m.date) <= end) continue;
+      if (m.type === 'Stock In') value -= m.qty * price;
+      else if (m.type === 'Stock Out' || m.type === 'Damaged') value += m.qty * price;
+    }
+    return Math.max(0, value);
+  });
+  return { labels: months.map((m) => m.label), values };
+}
+
+// Revenue and units per month for the last 3 months; cancelled / returned orders don't count.
 function getMonthlySales(salesOrders) {
-  const months = ['Jul', 'Aug', 'Sep'];
-  const revenue = [0, 0, 0];
-  const units = [0, 0, 0];
+  const months = lastMonths(3);
+  const revenue = months.map(() => 0);
+  const units = months.map(() => 0);
 
   salesOrders.forEach((o) => {
-    const month = new Date(o.date).getMonth();
-    const idx = month - 6; // Jul=6
-    if (idx >= 0 && idx < 3) {
+    if (o.status === 'Cancelled' || o.status === 'Returned') return;
+    const idx = months.findIndex((m) => m.key === String(o.date).slice(0, 7));
+    if (idx >= 0) {
       revenue[idx] += o.total;
       units[idx] += o.items.reduce((s, i) => s + i.qty, 0);
     }
   });
 
-  return { labels: months, revenue, units };
+  return { labels: months.map((m) => m.label), revenue, units };
 }
